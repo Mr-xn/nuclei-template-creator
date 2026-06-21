@@ -1,0 +1,68 @@
+# Example: Misconfiguration Detection Template
+# Based on real patterns from nuclei-templates repository
+# Demonstrates: config exposure, specific matchers, multi-layer verification
+
+id: example-app-config-exposure
+
+info:
+  name: Example App Configuration File Exposure
+  author: security-researcher
+  severity: high
+  description: |
+    Detects exposed configuration files for Example App that may contain
+    sensitive information such as database credentials, API keys, and
+    internal service endpoints.
+  impact: |
+    Exposed configuration files can leak sensitive credentials and internal
+    infrastructure details to attackers.
+  remediation: |
+    Restrict access to configuration files via web server configuration.
+    Move sensitive configuration outside the web root.
+  reference:
+    - https://docs.example.com/security-best-practices
+  metadata:
+    verified: true
+    max-request: 4
+    vendor: example
+    product: app
+    shodan-query: 'http.title:"Example App"'
+  tags: misconfig,exposure,config,example
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/config.yml"
+      - "{{BaseURL}}/config.yaml"
+      - "{{BaseURL}}/config.json"
+      - "{{BaseURL}}/config/production.yml"
+
+    stop-at-first-match: true
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "database:"
+          - "secret_key:"
+          - "api_key:"
+        part: body
+        condition: or
+
+      - type: word
+        words:
+          - "Example App"
+          - "example_app"
+        part: body
+        condition: or
+
+      - type: status
+        status:
+          - 200
+
+    extractors:
+      - type: regex
+        part: body
+        regex:
+          - 'secret_key:\s*["\']?([^\s"\']+)'
+          - 'api_key:\s*["\']?([^\s"\']+)'
+          - 'password:\s*["\']?([^\s"\']+)'
+        group: 1

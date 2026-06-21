@@ -1,0 +1,22 @@
+# Example: Workflow Template
+# Based on real patterns from nuclei-templates repository
+# Demonstrates: conditional execution, tag-based subtemplates
+
+id: example-app-workflow
+
+info:
+  name: Example App Security Workflow
+  author: security-researcher
+  severity: info
+  description: |
+    Orchestrates security checks for Example App by first detecting
+    the application, then running relevant vulnerability checks.
+  tags: workflow,example
+
+workflows:
+  - template: http/technologies/example-app-detect.yaml
+    subtemplates:
+      - tags: example,cve
+      - tags: example,misconfig
+      - tags: example,default-login
+      - tags: example,exposure

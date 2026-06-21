@@ -1,0 +1,51 @@
+# Example: SSL/TLS Check Template
+# Based on real patterns from nuclei-templates repository
+# Demonstrates: certificate checks, TLS version detection, cipher analysis
+
+id: example-weak-tls-detect
+
+info:
+  name: Weak TLS Configuration Detection
+  author: security-researcher
+  severity: medium
+  description: |
+    Detects servers supporting weak TLS versions (1.0, 1.1) or
+    deprecated cipher suites.
+  impact: |
+    Weak TLS configurations can be exploited to decrypt traffic
+    via known attacks like BEAST, POODLE, or CRIME.
+  remediation: |
+    Disable TLS 1.0 and 1.1. Configure strong cipher suites.
+    Use TLS 1.2 or 1.3 exclusively.
+  reference:
+    - https://ssl-config.mozilla.org/
+  metadata:
+    verified: true
+    max-request: 2
+  tags: ssl,tls,weak-cipher,deprecated,misconfig
+
+ssl:
+  - address: "{{Host}}:{{Port}}"
+    min_version: tls10
+    max_version: tls11
+    matchers:
+      - type: dsl
+        dsl:
+          - "tls_version == 'tls10' || tls_version == 'tls11'"
+    extractors:
+      - type: dsl
+        dsl:
+          - "tls_version"
+          - "cipher"
+
+  - address: "{{Host}}:{{Port}}"
+    matchers:
+      - type: word
+        words:
+          - "TLS_RSA_WITH_3DES_EDE_CBC_SHA"
+          - "TLS_RSA_WITH_RC4_128_SHA"
+          - "TLS_RSA_WITH_RC4_128_MD5"
+          - "TLS_RSA_WITH_DES_CBC_SHA"
+          - "TLS_RSA_WITH_NULL_SHA"
+        part: cipher
+        condition: or

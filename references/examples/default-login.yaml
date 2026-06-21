@@ -1,0 +1,82 @@
+# Example: Default Login Template
+# Based on real patterns from nuclei-templates repository
+# Demonstrates: credential testing, session management, dashboard detection
+
+id: example-app-default-login
+
+info:
+  name: Example App Default Admin Login
+  author: security-researcher
+  severity: high
+  description: |
+    Detects Example App instances using default administrator credentials.
+    Many deployments ship with admin/admin or admin/password defaults.
+  impact: |
+    An attacker can gain administrative access to the application.
+  remediation: |
+    Change the default administrator credentials immediately after installation.
+  reference:
+    - https://docs.example.com/initial-setup
+  metadata:
+    verified: true
+    max-request: 2
+    vendor: example
+    product: app
+  tags: default-login,example,admin
+
+http:
+  # Step 1: Get CSRF token
+  - method: GET
+    path:
+      - "{{BaseURL}}/login"
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "Example App"
+          - "csrf"
+        part: body
+        condition: and
+      - type: status
+        status:
+          - 200
+
+    extractors:
+      - type: regex
+        name: csrf_token
+        internal: true
+        regex:
+          - 'name="csrf_token" value="([^"]+)"'
+          - 'name="_token" value="([^"]+)"'
+        group: 1
+
+  # Step 2: Attempt login with default credentials
+  - method: POST
+    path:
+      - "{{BaseURL}}/login"
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+    body: "csrf_token={{csrf_token}}&username=admin&password=admin"
+    cookie-reuse: true
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "Dashboard"
+          - "Admin Panel"
+          - "Welcome, Admin"
+        part: body
+        condition: or
+
+      - type: status
+        status:
+          - 200
+          - 302
+        condition: or
+
+      - type: word
+        words:
+          - "Invalid credentials"
+          - "Login failed"
+        part: body
+        negative: true

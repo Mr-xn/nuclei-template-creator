@@ -1,0 +1,49 @@
+# Example: Token Spray Template
+# Based on real patterns from nuclei-templates repository
+# Demonstrates: self-contained template, API key validation
+
+id: api-example-service
+
+info:
+  name: Example Service API Key
+  author: security-researcher
+  severity: info
+  description: |
+    Detects valid Example Service API keys by attempting to access
+    the quota endpoint.
+  impact: |
+    Valid API keys can be used to access Example Service resources.
+  remediation: |
+    Rotate compromised API keys and review access logs.
+  reference:
+    - https://docs.example.com/api/authentication
+  metadata:
+    verified: true
+    max-request: 1
+  tags: token-spray,example,api
+
+self-contained: true
+
+http:
+  - method: GET
+    path:
+      - "https://api.example.com/v1/quota?api_key={{token}}"
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "quota"
+          - "remaining"
+        part: body
+        condition: and
+
+      - type: status
+        status:
+          - 200
+
+    extractors:
+      - type: json
+        part: body
+        json:
+          - ".quota.remaining"
+          - ".quota.total"

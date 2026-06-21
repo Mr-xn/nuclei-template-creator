@@ -1,0 +1,56 @@
+# Example: Subdomain Takeover Template
+# Based on real patterns from nuclei-templates repository
+# Demonstrates: CNAME detection, service-specific indicators, multi-layer matchers
+
+id: example-service-takeover
+
+info:
+  name: Example Service Subdomain Takeover
+  author: security-researcher
+  severity: high
+  description: |
+    Detects subdomains vulnerable to takeover via Example Service.
+    When a subdomain points to an Example Service instance that has been
+    deleted, an attacker can claim it and serve malicious content.
+  impact: |
+    An attacker can serve arbitrary content on the vulnerable subdomain,
+    potentially conducting phishing attacks or stealing cookies.
+  remediation: |
+    Remove the dangling CNAME record or re-provision the Example Service instance.
+  reference:
+    - https://github.com/EdOverflow/can-i-take-over-xyz
+    - https://docs.example.com/subdomain-takeover
+  metadata:
+    verified: true
+    max-request: 1
+  tags: takeover,dns,example
+
+dns:
+  - name: "{{FQDN}}"
+    type: CNAME
+    matchers:
+      - type: word
+        part: answer
+        words:
+          - ".example-service.com"
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/"
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "There is no app configured at this hostname"
+          - "NoSuchBucket"
+          - "The specified bucket does not exist"
+        part: body
+        condition: or
+
+      - type: status
+        status:
+          - 404
+          - 403
+          - 503
+        condition: or

@@ -1,0 +1,47 @@
+# Example: Network Service Detection Template
+# Based on real patterns from nuclei-templates repository
+# Demonstrates: TCP probing, hex data, service fingerprinting
+
+id: example-service-detect
+
+info:
+  name: Example Service Detection
+  author: security-researcher
+  severity: info
+  description: |
+    Detects Example Service running on the target by sending
+    a protocol-specific probe and analyzing the response.
+  reference:
+    - https://docs.example.com/protocol
+  metadata:
+    verified: true
+    max-request: 1
+  tags: network,detect,example,discovery
+
+tcp:
+  - inputs:
+      - data: "{{hex_encode('EXAMPLE_PROBE_v1\r\n')}}"
+    host:
+      - "{{Hostname}}"
+    port: 9999
+    read-size: 2048
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "Example Service"
+          - "ES/1.0"
+        part: data
+        condition: or
+
+      - type: regex
+        regex:
+          - "Version:\\s*[0-9]+\\.[0-9]+"
+        part: data
+
+    extractors:
+      - type: regex
+        part: data
+        regex:
+          - "Version:\\s*([0-9]+\\.[0-9]+\\.[0-9]+)"
+        group: 1

@@ -1,0 +1,46 @@
+# Example: DNS Detection Template
+# Based on real patterns from nuclei-templates repository
+# Demonstrates: DNS record checking, service fingerprinting
+
+id: example-service-dns-detect
+
+info:
+  name: Example Service DNS Detection
+  author: security-researcher
+  severity: info
+  description: |
+    Detects domains using Example Service by checking DNS records.
+  reference:
+    - https://docs.example.com/dns-configuration
+  metadata:
+    verified: true
+    max-request: 2
+  tags: dns,detect,example,discovery
+
+dns:
+  - name: "{{FQDN}}"
+    type: CNAME
+    matchers:
+      - type: word
+        part: answer
+        words:
+          - ".example-service.com"
+          - ".example-cdn.net"
+        condition: or
+
+  - name: "{{FQDN}}"
+    type: MX
+    matchers:
+      - type: word
+        part: answer
+        words:
+          - "mx1.example-service.com"
+          - "mx2.example-service.com"
+        condition: or
+
+    extractors:
+      - type: regex
+        part: answer
+        regex:
+          - "(mx[0-9]+\\.example-service\\.com)"
+        group: 1
