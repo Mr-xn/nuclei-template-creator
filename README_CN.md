@@ -178,10 +178,15 @@ http:
 ```yaml
 http:
   - method: GET/POST/PUT/DELETE/PATCH
-    path: ["{{BaseURL}}/endpoint"]
-    headers: {Key: Value}
+    path:
+      - "{{BaseURL}}/endpoint"
+    headers:
+      Key: Value
     body: "请求体"
-    raw: ["GET / HTTP/1.1\nHost: {{Hostname}}"]
+    raw:
+      - |
+        GET / HTTP/1.1
+        Host: {{Hostname}}
     redirects: true
     max-redirects: 5
     host-redirects: true          # 跟随跨主机重定向
@@ -191,7 +196,10 @@ http:
     skip-variables-check: true    # 跳过未解析变量验证
     stop-at-first-match: true
     matchers-condition: and/or
-    payloads: {name: [values]}
+    payloads:
+      name:
+        - value1
+        - value2
     attack: clusterbomb/pitchfork
     fuzzing:
       - part: query/body/path

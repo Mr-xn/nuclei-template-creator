@@ -178,10 +178,15 @@ http:
 ```yaml
 http:
   - method: GET/POST/PUT/DELETE/PATCH
-    path: ["{{BaseURL}}/endpoint"]
-    headers: {Key: Value}
+    path:
+      - "{{BaseURL}}/endpoint"
+    headers:
+      Key: Value
     body: "request body"
-    raw: ["GET / HTTP/1.1\nHost: {{Hostname}}"]
+    raw:
+      - |
+        GET / HTTP/1.1
+        Host: {{Hostname}}
     redirects: true
     max-redirects: 5
     host-redirects: true          # Follow cross-host redirects
@@ -191,7 +196,10 @@ http:
     skip-variables-check: true    # Skip unresolved variable validation
     stop-at-first-match: true
     matchers-condition: and/or
-    payloads: {name: [values]}
+    payloads:
+      name:
+        - value1
+        - value2
     attack: clusterbomb/pitchfork
     fuzzing:
       - part: query/body/path
