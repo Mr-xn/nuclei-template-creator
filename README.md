@@ -204,35 +204,45 @@ http:
 matchers:
   # Status code matching
   - type: status
-    status: [200, 302]
+    status:
+      - 200
+      - 302
 
   # Content length matching
   - type: size
-    size: [0]
+    size:
+      - 0
     part: body
 
   # String matching
   - type: word
-    words: ["string1", "string2"]
-    condition: and/or
+    words:
+      - "string1"
+      - "string2"
+    condition: and
     negative: true
     encoding: hex
 
   # Regex matching
   - type: regex
-    regex: ["pattern"]
+    regex:
+      - "pattern"
 
   # Binary/hex matching
   - type: binary
-    binary: ["504B0304"]
+    binary:
+      - "504B0304"
 
   # DSL expression matching
   - type: dsl
-    dsl: ['status_code == 200', 'contains(body, "text")']
+    dsl:
+      - 'status_code == 200'
+      - 'contains(body, "text")'
 
   # XPath matching
   - type: xpath
-    xpath: ["/html/head/title"]
+    xpath:
+      - "/html/head/title"
 ```
 
 ### Extractor Types
@@ -245,24 +255,32 @@ extractors:
     group: 1
     name: version
     internal: true
-    regex: ["Version: ([0-9.]+)"]
+    regex:
+      - "Version: ([0-9.]+)"
 
   # Key-value extraction (headers/cookies)
   - type: kval
-    kval: [content_type, set_cookie]
+    kval:
+      - content_type
+      - set_cookie
 
   # JSON extraction
   - type: json
-    json: [".data.id", ".items[].name"]
+    json:
+      - ".data.id"
+      - ".items[].name"
 
   # XPath extraction
   - type: xpath
     attribute: href
-    xpath: ["/html/body//a"]
+    xpath:
+      - "/html/body//a"
 
   # DSL extraction
   - type: dsl
-    dsl: ['len(body)', 'status_code']
+    dsl:
+      - 'len(body)'
+      - 'status_code'
 ```
 
 ### DSL Functions (60+)

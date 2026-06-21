@@ -204,35 +204,45 @@ http:
 matchers:
   # 状态码匹配
   - type: status
-    status: [200, 302]
+    status:
+      - 200
+      - 302
 
   # 内容长度匹配
   - type: size
-    size: [0]
+    size:
+      - 0
     part: body
 
   # 字符串匹配
   - type: word
-    words: ["string1", "string2"]
-    condition: and/or
+    words:
+      - "string1"
+      - "string2"
+    condition: and
     negative: true
     encoding: hex
 
   # 正则匹配
   - type: regex
-    regex: ["pattern"]
+    regex:
+      - "pattern"
 
   # 二进制/十六进制匹配
   - type: binary
-    binary: ["504B0304"]
+    binary:
+      - "504B0304"
 
   # DSL 表达式匹配
   - type: dsl
-    dsl: ['status_code == 200', 'contains(body, "text")']
+    dsl:
+      - 'status_code == 200'
+      - 'contains(body, "text")'
 
   # XPath 匹配
   - type: xpath
-    xpath: ["/html/head/title"]
+    xpath:
+      - "/html/head/title"
 ```
 
 ### 提取器类型
@@ -245,24 +255,32 @@ extractors:
     group: 1
     name: version
     internal: true
-    regex: ["Version: ([0-9.]+)"]
+    regex:
+      - "Version: ([0-9.]+)"
 
   # 键值提取（头/Cookie）
   - type: kval
-    kval: [content_type, set_cookie]
+    kval:
+      - content_type
+      - set_cookie
 
   # JSON 提取
   - type: json
-    json: [".data.id", ".items[].name"]
+    json:
+      - ".data.id"
+      - ".items[].name"
 
   # XPath 提取
   - type: xpath
     attribute: href
-    xpath: ["/html/body//a"]
+    xpath:
+      - "/html/body//a"
 
   # DSL 提取
   - type: dsl
-    dsl: ['len(body)', 'status_code']
+    dsl:
+      - 'len(body)'
+      - 'status_code'
 ```
 
 ### DSL 函数（60+）
