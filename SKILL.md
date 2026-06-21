@@ -1,6 +1,12 @@
 ---
 name: nuclei-template-creator
-description: Create, validate, and optimize Nuclei security scanning templates. Use this skill whenever the user mentions nuclei templates, vulnerability detection templates, security scanning rules, CVE detection, DAST testing, or wants to create any kind of security scanning template for ProjectDiscovery Nuclei. Covers all protocol types: HTTP, DNS, SSL, TCP/Network, File, Headless, JavaScript, Code, DAST, and Cloud templates.
+description: >
+  Create, validate, and optimize Nuclei security scanning templates.
+  Use this skill whenever the user mentions nuclei templates, vulnerability
+  detection templates, security scanning rules, CVE detection, DAST testing,
+  or wants to create any kind of security scanning template for ProjectDiscovery
+  Nuclei. Covers all protocol types: HTTP, DNS, SSL, TCP/Network, File,
+  Headless, JavaScript, Code, DAST, and Cloud templates.
 ---
 
 # Nuclei Template Creator
