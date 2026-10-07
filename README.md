@@ -32,6 +32,7 @@ nuclei-template-creator/
     ├── file-protocol.md              # File scanning syntax
     ├── headless-protocol.md          # Headless browser syntax
     ├── javascript-protocol.md        # JavaScript protocol syntax
+    ├── multi-protocol.md             # Multiple protocols in one template (v3)
     ├── code-protocol.md              # Code execution syntax
     ├── dast-protocol.md              # DAST fuzzing syntax
     ├── cloud-protocol.md             # Cloud security syntax
@@ -42,6 +43,7 @@ nuclei-template-creator/
     ├── oob-testing.md                # OOB testing reference
     ├── workflows.md                  # Workflow template syntax
     ├── flow.md                       # Flow control syntax
+    ├── template-signing.md           # Template signing (required for code)
     └── examples/                     # Real-world template examples
         ├── cve-http.yaml
         ├── misconfiguration.yaml
@@ -157,6 +159,7 @@ http:
 | JavaScript | [javascript-protocol.md](references/javascript-protocol.md) | Custom protocol logic |
 | Code | [code-protocol.md](references/code-protocol.md) | Shell/Python execution |
 | DAST | [dast-protocol.md](references/dast-protocol.md) | SQLi, XSS, SSTI fuzzing |
+| Multi-Protocol | [multi-protocol.md](references/multi-protocol.md) | Several protocols in ONE template (v3) |
 | Cloud | [cloud-protocol.md](references/cloud-protocol.md) | AWS, GCP misconfigurations |
 
 ### Core Concepts
@@ -170,6 +173,7 @@ http:
 | OOB Testing | [oob-testing.md](references/oob-testing.md) |
 | Flow Control | [flow.md](references/flow.md) |
 | Workflows | [workflows.md](references/workflows.md) |
+| Template Signing | [template-signing.md](references/template-signing.md) |
 
 ## Features Covered
 

@@ -18,9 +18,12 @@ Complete syntax reference for Nuclei JavaScript templates.
 
 ```yaml
 javascript:
-  - pre-condition: |
+  - init: |              # optional: runs ONCE after compile, before any target
+      let m = require('nuclei/fs');
+      updatePayload('keys', m.ReadFilesFromDir(keysDir));
+    pre-condition: |     # optional: runs per target; code runs only if it returns true
       isPortOpen(Host, Port);
-    code: |
+    code: |              # main code; value of last expression is the output
       let packet = bytes.NewBuffer();
       // ... JavaScript code ...
       Export("result");
@@ -32,6 +35,8 @@ javascript:
         dsl:
           - response
 ```
+
+On error, an `error` variable is exposed to matchers/extractors with the error message.
 
 ---
 
@@ -119,37 +124,51 @@ javascript:
 
 ## Available Libraries
 
+Nuclei v3 ships 15+ libraries tailored for exploits (`ssh`, `ftp`, `RDP`, `Kerberos`, `Redis`, ...), all imported with `require("nuclei/<lib>")`. Documented modules:
+
+### nuclei/ssh
+```javascript
+var m = require("nuclei/ssh");
+var c = m.SSHClient();
+var response = c.ConnectSSHInfoMode(Host, Port);  // banner / auth methods, no credentials
+to_json(response);
+```
+
+### nuclei/bytes
+Byte buffer construction for raw protocol packets (e.g. CVE-2020-0796 style handcrafted packets):
+```javascript
+var bytes = require("nuclei/bytes");
+var b = new bytes.Buffer();   // WriteString / WriteByte / Bytes() ...
+```
+
+### nuclei/fs
+Local file access (use in `init` to preload data once, not per target):
+```javascript
+var fs = require("nuclei/fs");
+fs.ListDir(path, 'file'|'dir'|'');        // string[] | null
+fs.ReadFile(path); fs.ReadFileAsString(path);
+fs.ReadFilesFromDir(dir);                 // all file contents in a dir
+```
+
+### nuclei/vnc
+```javascript
+var vnc = require("nuclei/vnc");
+var resp = vnc.IsVNC(Host, Port);   // { IsVNC: bool, Banner: string } | null
+```
+
 ### nuclei/net
 Network operations:
 ```javascript
 var m = require("nuclei/net");
-var c = m.NewTCPClient(Host, Port);
+var c = m.NewTCPClient(Host, Port);   // also NewTLSClient
 c.Send("data");
 var resp = c.RecvString(1024);
 ```
 
-### nuclei/mssql
-MSSQL operations:
+### nuclei/mssql / mysql / postgres (and more)
 ```javascript
-var m = require("nuclei/mssql");
-var c = m.MSSQLClient();
-c.IsMssql(Host, Port);
-```
-
-### nuclei/mysql
-MySQL operations:
-```javascript
-var m = require("nuclei/mysql");
-var c = m.MySQLClient();
-c.IsMySQL(Host, Port);
-```
-
-### nuclei/postgres
-PostgreSQL operations:
-```javascript
-var p = require("nuclei/postgres");
-var c = p.PostgresClient();
-c.IsPostgres(Host, Port);
+var c = require("nuclei/mssql").MSSQLClient();
+c.IsMssql(Host, Port);   // same pattern: .IsMySQL / .IsPostgres
 ```
 
 ---

@@ -36,8 +36,9 @@ What are you detecting?
 ├── SSL/TLS issue → references/ssl-protocol.md
 ├── Network service → references/network-protocol.md
 ├── Secret/key in files → references/file-protocol.md
-├── Browser-based vuln → references/headless-protocol.md
-├── Custom protocol logic → references/javascript-protocol.md
+├── Browser-based check → references/headless-protocol.md
+├── Multiple protocols in ONE template → references/multi-protocol.md
+├── Custom protocol logic (embedded JS) → references/javascript-protocol.md
 ├── Shell/Python check → references/code-protocol.md
 ├── Automated fuzzing → references/dast-protocol.md
 └── Cloud misconfiguration → references/cloud-protocol.md
@@ -330,6 +331,7 @@ Read these files as needed for detailed protocol syntax:
 - `references/file-protocol.md` - File scanning template syntax
 - `references/headless-protocol.md` - Headless browser template syntax
 - `references/javascript-protocol.md` - JavaScript template syntax
+- `references/multi-protocol.md` - Multiple protocols in one template (v3)
 - `references/code-protocol.md` - Code execution template syntax
 - `references/dast-protocol.md` - DAST fuzzing template syntax
 - `references/cloud-protocol.md` - Cloud template syntax
@@ -338,6 +340,9 @@ Read these files as needed for detailed protocol syntax:
 - `references/variables.md` - Built-in variables reference
 - `references/preprocessors.md` - Preprocessors reference (randstr)
 - `references/oob-testing.md` - OOB testing reference (interactsh)
+- `references/template-signing.md` - Template signing (ECDSA, required for code templates)
 - `references/workflows.md` - Workflow template syntax
 - `references/flow.md` - Flow control syntax (sequential, iteration, cross-protocol)
 - `references/examples/` - Real-world template examples by category
+
+Full auto-generated syntax overview: [SYNTAX-REFERENCE.md](https://github.com/projectdiscovery/nuclei/blob/dev/SYNTAX-REFERENCE.md) in the nuclei repo.

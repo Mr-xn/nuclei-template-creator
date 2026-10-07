@@ -44,22 +44,60 @@ http:
 
 | Option | Type | Description |
 |---|---|---|
-| `part` | string | Where to inject: `query`, `body`, `path`, `request` |
-| `type` | string | Injection type: `postfix`, `replace` |
-| `mode` | string | Injection mode: `single` |
-| `fuzz` | list | Payload values to inject |
-| `keys` | list | Specific parameter names to fuzz |
-| `values` | list | Regex patterns to match and replace |
+| `part` | string | Where to inject (default `query`) |
+| `parts` | list | Plural form — select multiple parts to fuzz at once |
+| `type` | string | Replacement type (default `replace`) |
+| `mode` | string | `multiple` (default — all values at once) or `single` (one value at a time) |
+| `fuzz` | list | Payload values to inject (supports payloads, DSL functions, variables) |
+| `keys` | list | Exact parameter names to fuzz |
+| `keys-regex` | list | Parameter-name regex to fuzz |
+| `values` | list | Value regex to fuzz |
 
 ### Part Values
-- `query` - Query parameters
-- `body` - Request body
-- `path` - URL path
-- `request` - Full request
+- `query` (default) - Query parameters
+- `path` - URL path parameters
+- `header` - Request headers
+- `cookie` - Cookies
+- `body` - Request body (JSON/XML/form/multipart are all abstracted as key-value pairs; binary/unknown bodies become a single `value` pair)
+- `request` - Special: fuzz the entire request (all parts above)
+
+```yaml
+fuzzing:
+  - parts: [query, body, header]   # multiple selective parts
+```
 
 ### Type Values
-- `postfix` - Appends payload after existing value
-- `replace` - Replaces matching values entirely
+- `replace` (default) - Replace the value with the payload
+- `prefix` - Prepend payload to the value
+- `postfix` - Append payload to the value
+- `infix` - Insert payload inside the value
+- `replace-regex` - Replace via regex
+
+### Key-Value Abstraction
+Nuclei converts every request part into key/value pairs, so ONE rule covers all body formats (JSON, XML, form, multipart): a body rule for SQLi works on every format automatically. E.g. `{"password":"12345678"}` → key `password`, value `12345678`.
+
+## Analyzers (extra verification requests)
+
+`time_delay` — verifies the response time is actually controllable by the payload using linear regression (ported from ZAP) with alternating delays instead of naive single-shot timing:
+
+```yaml
+analyzer:
+  name: time_delay
+  parameters:            # all optional, defaults are fine
+    sleep_duration: 10           # default 5
+    requests_limit: 6            # default 4
+    time_correlation_error_range: 0.30   # default 0.15
+    time_slope_error_range: 0.40         # default 0.30
+```
+
+Dynamic placeholders available in payloads with this analyzer: `[SLEEPTIME]` (sleep seconds) and `[INFERENCE]` (`%d=%d` condition). Match analyzer results with `part: analyzer`:
+
+```yaml
+matchers:
+  - type: word
+    part: analyzer
+    words: ["true"]
+```
 
 ---
 

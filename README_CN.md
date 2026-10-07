@@ -32,6 +32,7 @@ nuclei-template-creator/
     ├── file-protocol.md              # 文件扫描语法
     ├── headless-protocol.md          # 无头浏览器语法
     ├── javascript-protocol.md        # JavaScript 协议语法
+    ├── multi-protocol.md             # 单模板多协议（v3）
     ├── code-protocol.md              # 代码执行语法
     ├── dast-protocol.md              # DAST 模糊测试语法
     ├── cloud-protocol.md             # 云安全语法
@@ -42,6 +43,7 @@ nuclei-template-creator/
     ├── oob-testing.md                # OOB 测试参考
     ├── workflows.md                  # 工作流模板语法
     ├── flow.md                       # 流程控制语法
+    ├── template-signing.md           # 模板签名（code 模板必签）
     └── examples/                     # 真实模板示例
         ├── cve-http.yaml
         ├── misconfiguration.yaml
@@ -157,6 +159,7 @@ http:
 | JavaScript | [javascript-protocol.md](references/javascript-protocol.md) | 自定义协议逻辑 |
 | Code | [code-protocol.md](references/code-protocol.md) | Shell/Python 执行 |
 | DAST | [dast-protocol.md](references/dast-protocol.md) | SQLi、XSS、SSTI 模糊测试 |
+| 多协议 | [multi-protocol.md](references/multi-protocol.md) | 单模板组合多协议（v3） |
 | Cloud | [cloud-protocol.md](references/cloud-protocol.md) | AWS、GCP 错误配置 |
 
 ### 核心概念
@@ -170,6 +173,7 @@ http:
 | OOB 测试 | [oob-testing.md](references/oob-testing.md) |
 | 流程控制 | [flow.md](references/flow.md) |
 | 工作流 | [workflows.md](references/workflows.md) |
+| 模板签名 | [template-signing.md](references/template-signing.md) |
 
 ## 功能覆盖
 

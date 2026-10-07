@@ -43,6 +43,27 @@ flow: code(1)              # Execute code block 1 only
 | `tcp(N)` | Execute TCP request N | `tcp(1)` |
 | `javascript(N)` | Execute JavaScript block N | `javascript(1)` |
 
+Flow is JavaScript (ECMAScript 5.1) via the goja backend — any ES5.1 expression works, not just the operator forms above.
+
+## JS Bindings
+
+Any protocol can be invoked as `protocol_name()`. A specific request is selected by index `dns(1)` or by its request ID `dns("extract-vps")`, and several at once `dns("extract-vps","1")`:
+
+```yaml
+flow: http(1) && dns("extract-vps") && ssl()
+```
+
+| Binding | Description |
+|---|---|
+| `protocol_name()` / `(idx)` / `("id")` | Execute all / the idx-th / the named request of a protocol |
+| `iterate(x, [sep])` | Normalize any value (array/map/string/number/null) into an iterable array |
+| `set("name", value)` | Write a variable into the template context, usable by subsequent requests |
+| `template["key"]` | Read the template context (e.g. `template["ssl_domains"]`, internal-extracted values) |
+| `log(obj)` | Pretty-print to stdout — debugging only |
+| `new Dedupe()` | `.Add(v)...`, `.Values()` → unique array (dedupe extracted values) |
+
+**Internal matchers (v3.1.4+):** from v3.1.4 all events in a flow template print results; mark earlier requests' matchers `internal: true` to suppress their individual output when they only gate later requests.
+
 ---
 
 ## Iteration with iterate()

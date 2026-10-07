@@ -170,11 +170,20 @@ http:
     cookie-reuse: true
 ```
 
+Blank Request URI — make the request go to the exact input URL without any path tampering:
+
+```yaml
+- raw:
+    - |
+      GET HTTP/1.1
+      Host: {{Hostname}}
+```
+
 ---
 
 ## Redirects
 
-Not followed by default. Enable per template:
+Not followed by default. Enable per template (redirect settings apply per template, NOT per request; 10 redirects are followed at maximum by default, tunable via `max-redirects`):
 
 ```yaml
 http:
@@ -282,8 +291,11 @@ http:
 ```
 
 **Attack modes:**
-- `clusterbomb` - All combinations (default)
-- `pitchfork` - Pair values sequentially
+- `batteringram` - Same payload set placed in all positions (default)
+- `pitchfork` - One payload set per position, iterated in lockstep
+- `clusterbomb` - All combinations across payload sets (needs 2+ variables — compiling fails if you define only one)
+
+> File-based wordlists stored OUTSIDE the nuclei templates directory require running nuclei with `-lfa` (`-allow-local-file-access`).
 
 ### External Wordlists
 
@@ -377,6 +389,92 @@ http:
           - "SSH"
 ```
 
+`unsafe: true` enables the rawhttp client for fully malformed requests (smuggling, CRLF, Host header injection). Use the `|+` YAML block chomping indicator when trailing blank lines must be preserved verbatim in the raw request.
+
+## Request Annotations (raw requests only)
+
+Inline per-request overrides, placed just before the first RFC line of a raw request:
+
+```yaml
+- raw:
+    # this request goes to {{Hostname}} to fetch the token
+    - |
+      GET /getkey HTTP/1.1
+      Host: {{Hostname}}
+    # this one goes to a different host to validate the token
+    - |
+      @Host: https://api.target.com:443
+      GET /api/key={{token}} HTTP/1.1
+      Host: api.target.com:443
+```
+
+| Annotation | Description |
+|---|---|
+| `@Host: target` | Override the real target (supports `domain.tld`, `domain.tld:port`, `http://domain.tld:port`) |
+| `@tls-sni: name` | Override TLS SNI (literal, `request.host` = Host header value, or `interactsh-url`) |
+| `@timeout: 25s` | Per-request timeout (duration string; defaults to the global `-timeout` flag value) |
+
+## Pipelining & Connection Pooling
+
+```yaml
+http:
+  - raw:
+      - |
+        GET /{{path}} HTTP/1.1
+        Host: {{Hostname}}
+    attack: batteringram
+    payloads:
+      path: path_wordlist.txt
+    unsafe: true
+    pipeline: true
+    pipeline-concurrent-connections: 40
+    pipeline-requests-per-connection: 25000
+```
+
+- Pipelining needs a target that supports it (verify with `httpx -pipeline`); nuclei falls back to the standard engine otherwise.
+- Connection pooling: set `threads: N` alongside payloads. A `Connection: Close` header disables pooling (engine falls back).
+
+## Race Conditions
+
+Gate mechanism (all request bytes sent except the last, then released together):
+
+```yaml
+http:
+  - raw:
+      - |
+        POST /coupons HTTP/1.1
+        Host: {{Hostname}}
+
+        promo_code=20OFF
+    race: true
+    race_count: 10      # same request fired 10 times simultaneously
+    matchers:
+      - type: status
+        status: [200]
+        part: header
+```
+
+Multi-request race (N unique raw requests fired at once): set `threads: 5` together with `race: true` instead of `race_count`.
+
+## Value Sharing Between Requests
+
+Extract a value in one request, reuse it in later requests via Dynamic Extractors (see matchers-extractors.md). The official marker syntax in raw requests is `§name§` (`{{name}}` also works):
+
+```yaml
+- raw:
+    - |
+      POST /pcidss/report?type=allprofiles&sid=loginchallengeresponse1requestbody&username=nsroot&set=1 HTTP/1.1
+      Host: {{Hostname}}
+      Content-Type: application/xml
+      rand_key: §randkey§
+  extractors:
+    - type: regex
+      name: randkey
+      internal: true
+      regex:
+        - '(?m)[0-9]{3,10}\.[0-9]+'
+```
+
 ---
 
 ## Skip Variables Check
@@ -407,11 +505,17 @@ http:
 | `body` | string | Request body |
 | `raw` | list | Raw HTTP requests |
 | `redirects` | bool | Follow redirects |
-| `max-redirects` | int | Max redirect count |
+| `max-redirects` | int | Max redirects (default 10) |
 | `host-redirects` | bool | Follow redirects to different hosts |
 | `disable-cookie` | bool | Disable cookie reuse |
 | `cookie-reuse` | bool | Enable cookie reuse |
-| `unsafe` | bool | Send raw request without encoding |
+| `unsafe` | bool | Send raw request without encoding (rawhttp client) |
+| `race` | bool | Enable race condition (gate) mode |
+| `race_count` | int | Number of simultaneous copies of the request |
+| `threads` | int | Concurrency for payloads / multi-request race |
+| `pipeline` | bool | Enable HTTP pipelining (requires unsafe) |
+| `pipeline-concurrent-connections` | int | Pipelined connections (default 40) |
+| `pipeline-requests-per-connection` | int | Requests per pipelined connection (default 25000) |
 | `skip-variables-check` | bool | Skip validation of unresolved variables |
 | `matchers` | list | Matching rules |
 | `extractors` | list | Data extraction rules |

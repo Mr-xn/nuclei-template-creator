@@ -32,12 +32,18 @@ code:
 
 | Option | Type | Description |
 |---|---|---|
-| `engine` | list | Script interpreters to use |
-| `source` | string | Script source code |
+| `engine` | list | Script interpreters to use, searched in order until one is found |
+| `source` | string | Script source code, or a file path (e.g. `helpers/code/pyfile.py`) |
+| `args` | list | Arguments passed to the engine (e.g. `-ExecutionPolicy, Bypass, -File` for pwsh) |
+| `pattern` | string | Glob for the temp file name/extension of the snippet (e.g. `"*.ps1"`) |
 | `matchers` | list | Matching rules |
 | `extractors` | list | Data extraction rules |
 
-**Important:** Code templates typically use `self-contained: true` since they don't need a target URL.
+**Important:**
+- Code templates are NOT executed by default — run nuclei with the `-code` flag to enable the code protocol.
+- Templates typically use `self-contained: true` since they don't need a target URL; with a target, the target is passed to the script via **stdin**.
+- Matcher/extractor parts: `response` (stdout, trailing whitespace filtered) and `stderr`.
+- In multi-protocol templates, previous code outputs are available as `{{code_1_response}}`, `{{code_2_response}}`, ...
 
 ---
 
@@ -45,14 +51,13 @@ code:
 
 | Engine | Description |
 |---|---|
-| `sh` | Shell script |
-| `bash` | Bash script |
-| `python` / `python3` | Python script |
-| `ruby` | Ruby script |
-| `perl` | Perl script |
-| `node` | Node.js script |
-| `lua` | Lua script |
-| `java` | Java (via JShell) |
+| `sh` / `bash` | Shell script |
+| `py` / `python` / `python3` | Python script (preinstalled on macOS & most Linux distros) |
+| `go` | Go program |
+| `ps` / `pwsh` / `powershell` / `powershell.exe` | PowerShell (may need separate install) |
+| `ruby` / `perl` / `node` / `lua` / `java` (JShell) | Other interpreters |
+
+Engines are tried in the order listed; the first one found on the system runs the snippet.
 
 Variables from the `variables:` block are available as environment variables in shell scripts, or via `os.getenv()` in Python.
 

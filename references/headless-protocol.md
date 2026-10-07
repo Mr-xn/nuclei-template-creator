@@ -36,109 +36,185 @@ headless:
 ## Actions
 
 ### navigate
-Navigate to a URL:
+Navigate to a URL (supports `{{BaseURL}}`, `{{Hostname}}`, etc.):
 ```yaml
 - action: navigate
   args:
     url: "{{BaseURL}}"
 ```
 
-### waitload
-Wait for page to load:
-```yaml
-- action: waitload
-```
-
-### waitstable
-Wait for DOM to stabilize:
-```yaml
-- action: waitstable
-  args:
-    duration: 5s
-```
-
-### screenshot
-Take a screenshot:
-```yaml
-- action: screenshot
-  args:
-    fullpage: "true"
-    mkdir: "true"
-    to: "{{dir}}/{{filename}}"
-```
-
 ### script
-Execute JavaScript:
+Run JavaScript on the current page. `code` STRICTLY requires a function reference — a direct expression will NOT work:
 ```yaml
 - action: script
-  name: extract1
+  name: extract1              # optional: store return value, matchable via part: extract1
   args:
     code: |
-      () => { return document.title }
+      () => { return document.title }   # ✅ function reference
+      # alert(document.domain)          # ❌ NOT a function reference
+```
+Run JS before any page loads with `hook: true` (e.g. neuter window.alert so dialogs don't block the flow):
+```yaml
+- action: script
+  args:
+    code: () => (function() { window.alert=function(){} })()
+    hook: true
 ```
 
-### click
-Click an element:
+### click / rightclick
+Click (left / right mouse button) an element located by a selector:
 ```yaml
 - action: click
   args:
+    by: xpath
+    xpath: /html/body/div[1]/div[3]/form/div[2]/div[1]/div[1]/div/div[2]/input
+- action: rightclick
+  args:
     by: selector
     selector: "#button"
-    timeout: 5
 ```
 
 ### text
-Extract text from element:
+TYPE text into an input element with the keyboard (NOT text extraction — use `extract` for that):
 ```yaml
 - action: text
-  name: extracted_text
   args:
-    by: selector
-    selector: ".content"
-```
-
-### setheader
-Set request headers:
-```yaml
-- action: setheader
-  args:
-    part: request
-    key: "User-Agent"
-    value: "Mozilla/5.0..."
-```
-
-### addheader
-Add request headers:
-```yaml
-- action: addheader
-  args:
-    part: request
-    key: "X-Custom"
-    value: "value"
-```
-
-### setbody
-Set request body:
-```yaml
-- action: setbody
-  args:
-    part: request
-    body: "custom body"
+    by: xpath
+    xpath: /html/body/div/div[2]/form/fieldset/input
+    value: admin
 ```
 
 ### keyboard
-Simulate keyboard input:
+Simulate a single key press (`keys` accepts key-codes):
 ```yaml
 - action: keyboard
   args:
-    keys: "test input"
+    keys: '\r'    # Enter
 ```
 
-### debug
-Debug action for troubleshooting:
+### time / select / files
+Fill time inputs (RFC3339), select options, handle file uploads:
 ```yaml
-- action: debug
+- action: time
+  args:
+    by: xpath
+    xpath: //input[@type="time"]
+    value: 2006-01-02T15:04:05Z07:00
+- action: select
+  args:
+    by: xpath
+    xpath: //select
+    selected: true
+    value: option[value=two]
+- action: files
+  args:
+    by: xpath
+    xpath: //input[@type="file"]
+    value: /root/test/payload.txt
 ```
+
+### screenshot
+Take a screenshot (add `fullpage: true` for full-page):
+```yaml
+- action: screenshot
+  args:
+    to: "{{dir}}/{{filename}}"
+    fullpage: "true"
+    mkdir: "true"
+```
+
+### wait actions
+| Action | Waits for |
+|---|---|
+| `waitfcp` | First Contentful Paint |
+| `waitfmp` | First Meaningful Paint |
+| `waitdom` | DOMContentLoaded (HTML parsed, no subresources) |
+| `waitload` | Full page load (stylesheets, images) |
+| `waitidle` | Network idle (no more requests) |
+| `waitstable` | Page stable for N duration (default 1s): `args: {duration: 5s}` |
+
+### waitdialog
+Wait for a JS dialog (`alert`/`confirm`/`prompt`/`onbeforeunload`) and auto-accept it — accurate XSS detection with low FP. `name` is REQUIRED to expose output variables:
+```yaml
+- action: waitdialog
+  name: alert
+  args:
+    max-duration: 5s   # default 10s
+```
+Output variables: `NAME` (bool, dialog triggered), `NAME_type` (dialog type), `NAME_message` (displayed message).
+
+### waitevent
+Wait for a page event (full list: go-rod proto definitions):
+```yaml
+- action: waitevent
+  args:
+    event: 'Page.loadEventFired'
+```
+
+### extract
+Extract the text of an element (or one of its attributes) into a named variable:
+```yaml
+- action: extract
+  name: extracted-value
+  args:
+    by: xpath
+    xpath: /html/body/div/p[2]/a
+    # target: attribute      # to extract an attribute instead of text:
+    # attribute: href
+```
+
+### getresource
+Return the `src` attribute of an element:
+```yaml
+- action: getresource
+  name: extracted-value-src
+  args:
+    by: xpath
+    xpath: //img[1]
+```
+
+### Header / body / method manipulation
+```yaml
+- action: setmethod          # override request method
+  args: {part: request, method: DELETE}
+- action: addheader          # add (does NOT overwrite existing)
+  args: {part: response, key: X-Custom, value: "v"}   # part: request|response
+- action: setheader          # set (overwrites)
+  args: {part: request, key: User-Agent, value: "Mozilla/5.0..."}
+- action: deleteheader
+  args: {part: response, key: Content-Security-Policy}
+- action: setbody
+  args: {part: response, body: '{"success":"ok"}'}
+```
+
+### sleep / debug
+```yaml
+- action: sleep
+  args: {duration: 5}
+- action: debug   # 5s delay between actions + trace of all headless events (debugging only)
+```
+
+---
+
+## Selectors
+
+| Selector (`by:`) | Description |
+|---|---|
+| `selector` (default) | CSS selector |
+| `x` / `xpath` | XPath selector |
+| `r` / `regex` | CSS selector whose text matches regex |
+| `js` | Return elements from a JS function |
+| `search` | Search query (text, XPATH, or CSS) |
+
+---
+
+## Matchers / Extractor Parts
+
+| Part | Description |
+|---|---|
+| `request` | Headless request |
+| `<out_names>` | Action names with stored values (from `name:`) |
+| `raw` / `body` / `data` | Final DOM response from the browser |
 
 ---
 

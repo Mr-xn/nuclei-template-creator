@@ -229,6 +229,18 @@ matchers:
     negative: true  # Match when NOT found
 ```
 
+### Internal Matchers
+Suppress printing a request's own match result — for multi-request / flow templates where request 1's matchers act as a pre-condition for request 2 (`flow: http(1) && http(2)`); without it both requests would emit results:
+```yaml
+matchers:
+  - type: dsl
+    dsl:
+      - 'status_code == 200'
+      - 'contains(body, "Backup Migration")'
+    condition: and
+    internal: true   # gate for the next request; don't print this event
+```
+
 ---
 
 ## Global Matchers

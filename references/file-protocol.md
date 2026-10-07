@@ -29,8 +29,12 @@ file:
 
 | Option | Type | Description |
 |---|---|---|
-| `extensions` | list | File extensions to scan. Use `all` for all types |
-| `max-size` | int | Maximum file size to scan |
+| `extensions` | list | File extensions to scan. Use `all` for all types (minus the default denylist) |
+| `denylist` | list | Extensions to skip; with `extensions: [all]` this OVERRIDES the built-in denylist |
+| `max-size` | int | Max file size in bytes (default 5 MB / 5242880; larger files skipped) |
+| `no-recursive` | bool | Disable recursive walking of directories / globs |
+
+Default denylist (skipped with `all` unless overridden by `denylist`): media/archives/binaries such as `7z, apk, avi, bmp, css, csv, deb, dll, doc, exe, gif, gz, ico, iso, jar, jpeg, jpg, mp3, mp4, mpeg, pdf, pkg, png, ppt, psd, rar, rpm, svg, swf, sys, tar, tif, ttf, txt, wav, webm, wmv, woff, woff2, xls, xlsx, zip` (full list in official docs). Note: matcher/extractor types are limited to `word` and `regex` in the file protocol. Run with `nuclei -t file.yaml -file -target <dir-or-file>`.
 
 Common extension values: `yaml`, `json`, `xml`, `env`, `config`, `ini`, `conf`, `txt`, `log`, `key`, `pem`, `p12`, `jks`, `all`
 
