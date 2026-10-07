@@ -305,6 +305,8 @@ extractors:
 | **转换** | `bin_to_dec`、`hex_to_dec`、`oct_to_dec`、`dec_to_hex` |
 | **工具** | `compare_versions`、`wait_for`、`ip_format` |
 
+> ⚠️ `rand_ip(cidr ...string)` 必须带至少一个 CIDR 参数（无默认值）。无参 `{{rand_ip()}}` 写在请求内联（header/body/path）会让携带它的所有请求被静默丢弃；写在 `variables:` 里则会把字面字符串原样发给目标。`rand_int()` 无参合法。（nuclei v3.11.1 实测）
+
 ### 流程控制
 
 ```yaml

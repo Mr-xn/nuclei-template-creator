@@ -212,6 +212,23 @@ http:
         part: body
 ```
 
+### Random X-Forwarded-For (per-request rotation)
+```yaml
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/endpoint"
+    headers:
+      X-Forwarded-For: '{{rand_ip("1.0.0.0/8","36.0.0.0/8","101.0.0.0/8","183.0.0.0/8")}}'
+```
+Use inline helper in the header value (NOT via `variables:`) — inline expressions re-evaluate on every request, `variables:` are computed once per execution.
+
+**Helper-function gotchas (verified on nuclei v3.11.1):**
+- `rand_ip(cidr ...string)` REQUIRES at least one CIDR argument. No-arg `{{rand_ip()}}` is an evaluation error.
+- Invalid expression INLINE in a request spec (header/body/path) → every request carrying it is **silently dropped** (`-validate` still passes, scan completes instantly with zero requests; detect by counting requests against a mock).
+- Invalid expression in `variables:` → the **literal string is sent as-is** (e.g. the target receives `{{rand_ip()}}` as a header value — a scanner fingerprint). Valid expressions in `variables:` evaluate correctly, but only once per execution.
+
+
 ### Local File Inclusion
 ```yaml
 http:

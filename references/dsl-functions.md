@@ -448,11 +448,13 @@ Generates random numeric string, excluding optional bad numbers.
 ```
 
 ### rand_ip
-Generates a random IP address within optional CIDR range.
+Generates a random IP address from the given CIDR range(s). At least one CIDR argument is REQUIRED — there is no default.
 ```yaml
 - 'rand_ip("192.168.0.0/24")'  # "192.168.0.171"
+- '{{rand_ip("36.0.0.0/8","101.0.0.0/8")}}'  # per-request random public IP (e.g. X-Forwarded-For)
 # Signature: rand_ip(cidr ...string) string
 ```
+**Gotcha (verified nuclei v3.11.1):** no-arg `rand_ip()` is an evaluation error. Inline in a request spec (header/body/path) it makes every request carrying it **silently dropped** (`-validate` passes, zero requests sent — detect by counting requests against a mock); in `variables:` the literal string `{{rand_ip()}}` is sent as-is (scanner fingerprint). Contrast: `rand_int()` without args IS valid (defaults 0–MaxInt32).
 
 ---
 

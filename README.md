@@ -305,6 +305,8 @@ extractors:
 | **Conversion** | `bin_to_dec`, `hex_to_dec`, `oct_to_dec`, `dec_to_hex` |
 | **Utility** | `compare_versions`, `wait_for`, `ip_format` |
 
+> ⚠️ `rand_ip(cidr ...string)` requires at least one CIDR argument (no default). A no-arg `{{rand_ip()}}` inline in a request spec silently drops every request carrying it; in `variables:` the literal string is sent as-is. `rand_int()` without args is valid. (verified nuclei v3.11.1)
+
 ### Flow Control
 
 ```yaml

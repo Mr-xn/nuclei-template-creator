@@ -27,9 +27,10 @@ variables:
 Variables are supported in: `dns`, `http`, `headless`, `network`
 
 ### Key Properties
-- **Immutable**: Value is calculated once and does not change
+- **Immutable**: Value is calculated once and does not change (one random draw per template execution — use inline helpers in the request instead when you need per-request rotation)
 - **DSL syntax**: Helper functions enclosed in `{{...}}`
 - **Usable in**: Raw requests, host fields, inputs, matchers, extractors
+- **Failure mode (verified nuclei v3.11.1)**: a valid helper expression evaluates normally; an INVALID expression (e.g. `{{rand_ip()}}` without CIDR args) silently passes through as the literal string — the target receives `{{rand_ip()}}` verbatim, which fingerprints the scanner. The same invalid expression placed inline in a request spec instead causes every request carrying it to be silently DROPPED.
 
 ---
 
@@ -85,10 +86,12 @@ matchers:
 |---|---|
 | `{{randstr}}` | Random string |
 | `{{rand_base(N)}}` | Random string of length N |
-| `{{rand_int(min, max)}}` | Random integer in range |
+| `{{rand_int(min, max)}}` | Random integer in range (both args optional, defaults 0–MaxInt32) |
+| `{{rand_char(charset)}}` | Single random character (charset optional) |
 | `{{rand_text_alpha(N)}}` | Random alphabetic string |
 | `{{rand_text_alphanumeric(N)}}` | Random alphanumeric string |
 | `{{rand_text_numeric(N)}}` | Random numeric string |
+| `{{rand_ip(cidr,...)}}` | Random IP from given CIDR(s) — CIDR argument REQUIRED, no default |
 
 ---
 

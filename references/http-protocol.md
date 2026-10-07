@@ -108,6 +108,13 @@ headers:
   Authorization: Bearer {{token}}
 ```
 
+**Helper expressions in headers** (works in method+path format too, though the official docs scope helper functions to raw/network requests):
+```yaml
+headers:
+  X-Forwarded-For: '{{rand_ip("36.0.0.0/8","101.0.0.0/8","183.0.0.0/8")}}'  # new IP per request
+```
+⚠️ An invalid expression in a header (e.g. `{{rand_ip()}}` without CIDR args) makes nuclei **silently drop every request carrying that header** — `-validate` passes and the scan completes instantly with zero requests. Verify request generation against a mock server when using helper expressions in request specs.
+
 ---
 
 ## Body
